@@ -1,0 +1,34 @@
+<div>
+  <nz-modal nzTitle="Add you favourite bookmark !"
+  (nzOnCancel)="handleCancel()">
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="otpForm" (ngSubmit)="submitOtp()">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">OTP</nz-form-label>
+        <nz-form-control [nzSpan]="14" [nzErrorTip]="contactNumberErrorTpl">
+          <input nz-input formControlName="otp" type="text" placeholder="Enter 5 digit otp" />
+        </nz-form-control>
+        <ng-template #contactNumberErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">
+            Please input your OTP!
+          </ng-container>
+          <ng-container *ngIf="control.hasError('pattern')">
+            OTP Number Must be 5 digits
+          </ng-container>
+        </ng-template>
+        <div class = "ml-3">
+          <button nz-button nzType="primary" nzShape="round" [disabled]="!otpForm.valid">
+            Submit
+          </button>
+        </div>
+      </nz-form-item>
+    </form>
+    <div class="d-flex justify-content-center" style="opacity: 0.4;">
+      <label>OTP send within:  </label>
+      <label>asda</label>
+    </div>
+
+  </ng-container>
+  <div *nzModalFooter style="display: none"></div>
+</nz-modal>
+  </div>

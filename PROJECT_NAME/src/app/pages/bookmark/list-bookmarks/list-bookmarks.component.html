@@ -1,0 +1,15 @@
+<nz-card >
+
+   {{this.previousDatas.value|json}} 
+  <ng-container *ngFor="let item of this.previousDatas.value">
+    <div>
+      <ng-container>
+        <nz-card>
+          <h4 class="card-title">{{ item.title }}</h4>
+        </nz-card>
+      </ng-container>
+    </div>
+    <hr />
+  </ng-container>
+  
+</nz-card>

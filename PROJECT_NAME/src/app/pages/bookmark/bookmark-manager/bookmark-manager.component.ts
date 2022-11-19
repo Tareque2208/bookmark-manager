@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 @Component({
   selector: 'app-bookmark-manager',
@@ -11,138 +10,123 @@ export class BookmarkManagerComponent implements OnInit {
   editedItemId!: number;
   isEditMode!: boolean;
   editedItem: any;
-  previousDatas:any = [];
+  previousDatas: any = [];
+  localBookmarkList: any = [];
   isAddBookmarkVisible: boolean = false;
   isAddNewCategory: boolean = false;
-  otpForm: FormGroup;
+  addBookmarkForm: FormGroup;
+  selectedCategory: any = 0;
 
 
-  categoryList: { id: number; name: string }[] = [
-    { id: 1, name: 'You better see this one' },
-    { id: 4, name: 'Booom ! ! !' },
-    { id: 5, name: 'Wanna play a game?' },
+  categoryList: { id: number; name: string,data: [] }[] = [
+    { id: 1, name: 'You better see this one', data: [] },
+    { id: 2, name: 'Booom ! ! !',data: [] },
+    { id: 3, name: 'Wanna play a game?',data: [] },
   ];
 
   constructor(
-    private notification: NzNotificationService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
     private fb: FormBuilder,
+    private notification: NzNotificationService,
   ) {
 
-    this.otpForm = this.fb.group({
-      title: [null],
-      url: [null],
-      selectedCategoryId: [null],
-      newCategoryName: [null]
+    this.addBookmarkForm = this.fb.group({
+      title: ['', Validators.required],
+      url: ['', Validators.required],
+      selectedCategoryId: [''],
+      newCategoryName: ['']
     });
   }
 
-  ngOnInit() {this.getItem("datas")}
+  ngOnInit() {
+    this.sortingoutAllDatas();
+  }
 
   //#region modal
+  sortingoutAllDatas(): void {
+    this.getItem();
+    this.categoryList.forEach((item:any, index:number)=>{
+      item["data"] = this.fiterCategoryWise(item.id);
+    })
+  }
   showModal(): void {
     this.isAddBookmarkVisible = true;
   }
 
   handleCancel(): void {
     this.isAddBookmarkVisible = false;
-    this.otpForm.reset();
+    this.addBookmarkForm.reset();
   }
 
   addNewCategory(): void {
     this.isAddNewCategory = true;
-    this.otpForm.reset();
+    this.addBookmarkForm.reset();
   }
 
-  getItem(key: string): any {
+  getItem(): any {
     // console.log(JSON.parse(localStorage.getItem('datas')));
-    let localDatas = JSON.parse(localStorage.getItem("datas")|| '{}');
-    this.previousDatas = localDatas;
-    console.log(localDatas);
-    return localDatas;
+    let storageData = [];
+    let localData = localStorage.getItem("datas");
+    if (localData !== null && localData?.length > 0) {
+      storageData = JSON.parse(localData);
+    }
+    return storageData;
   }
 
-  submitOtp(){
-    this.isAddBookmarkVisible = false;
-    const reportMap = new Map();
-    // const dataList = [];
-    let i = 1;
+  submitForm() {
+    if(this.addBookmarkForm.controls['selectedCategoryId'].value || this.addBookmarkForm.controls['newCategoryName'].value){
 
-    
-
-    if(this.otpForm.value.selectedCategoryId == 1){
-
+      let bookmarks: any[] = [];
+      // if(this.addBookmarkForm.controls['newCategoryName'].value){
+      //   console.log(this.addBookmarkForm.controls['newCategoryName'].value);
+      //   this.addingNewCategory(this.addBookmarkForm.controls['newCategoryName'].value);
+      // }
+  
+      let savedData = localStorage.getItem("datas");
+      console.log(savedData, savedData?.length);
+      if (savedData !== null && savedData?.length > 1) {
+        let parsedData = JSON.parse(savedData);
+        let obj = { ...this.addBookmarkForm.value };
+        bookmarks = [obj, ...parsedData];
+      } else {
+        bookmarks = [this.addBookmarkForm.value];
+      }
+  
+      localStorage.setItem("datas", JSON.stringify(bookmarks));
+      
+      this.sortingoutAllDatas();
+      this.addBookmarkForm.reset();
+      this.isAddBookmarkVisible = false;
+      this.notification.success('Congratulations!!! ', 'Your data is saved');
+    }else{
+      this.notification.error('Sorry!!! ', 'You must provide category');
     }
 
-
-    this.previousDatas.map(function(person: any) {
-      return addKeyValue(person, 'newKey', 'newValue');
-    });
-    // if(this.previousDatas.length > 1){
-    //   for (const data of this.previousDatas) {
-    //     reportMap.set('#SL', i);
-    //     reportMap.set('Title', data.title);
-    //     reportMap.set('Url', data.url);
-    //     let selectedCat = this.categoryList.find(
-    //       (cat) => cat.id == data.selectedCategoryId
-    //     );
-    //     reportMap.set('Selected Category', selectedCat);
-    //     reportMap.set('New Category Name', data.newCategoryName);
-  
-    //     const jsonObject: any = {};
-    //     reportMap.forEach((value, key) => {
-    //       jsonObject[key] = value;
-    //     });
-  
-    //     dataList.push(jsonObject);
-    //     i++;
-    //   }
-    // }else{
-    //   reportMap.set('#SL', i);
-    //     reportMap.set('Title', this.otpForm.controls['title']);
-    //     reportMap.set('Url', this.otpForm.controls['url']);
-    //     let selectedCat = this.categoryList.find(
-    //       (cat) => cat.id == this.otpForm.controls['selectedCategoryId'].value
-    //     );
-    //     // reportMap.set('Selected Category', selectedCat);
-    //     reportMap.set('Selected Category', this.otpForm.controls['selectedCat']);
-    //     reportMap.set('New Category Name', this.otpForm.controls['newCategoryName']);
-  
-    //     const jsonObject: any = {};
-    //     reportMap.forEach((value, key) => {
-    //       jsonObject[key] = value;
-    //     });
-  
-    //     dataList.push(jsonObject);
-    //     i++;
-    // }
-    
-    // this.previousDatas = this.previousDatas.push(JSON.stringify(dataList));
-    localStorage.setItem("datas", this.previousDatas);
   }
 
+  fiterCategoryWise(id: number) {
+    return this.getItem()?.filter((obj: any) => obj.selectedCategoryId == id);
+  }
 
-// addKeyValue(newObj, objKey, objVal){
-//   newObj[objKey] = datobjVala;
-// }
+  addingNewCategory(value: string) {
+    const sorted = this.categoryList.sort((f,s) => s.id);
+    let res = this.getMaxValueKey(this.categoryList);
+    console.log("res", Math.max(...this.categoryList.keys()));
+    // let obj = {
+    //   id:
+    // }
+    // this.categoryList.push(id: sorted+1, name: value);
+  }
 
-// let newinfo = persons.map(function(person) {
-//   return addKeyValue(person, 'newKey', 'newValue');
-// });
+  getMaxValueKey( data: any): string {
+    console.log();
+    return Object.keys(data).reduce((a, b) => data[a] > data[b] ? a : b);
+  }
+  
+  showDetails(details:any){
+    this.selectedCategory = details;
+    console.log("details", details);
+    let obj = this.categoryList.find((cat) => cat.id === this.selectedCategory.selectedCategoryId);
+    console.log("objaaaaaa", obj);
 
-
-
-addKeyValue(obj: { [x: string]: any; }, key: string | number, data: any){
-  obj[key] = data;
+  }
 }
- 
-
-// var newinfo = 
-
-
-}
-function addKeyValue(person: any, arg1: string, arg2: string) {
-  throw new Error('Function not implemented.');
-}
-
